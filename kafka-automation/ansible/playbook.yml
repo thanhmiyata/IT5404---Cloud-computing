@@ -1,0 +1,63 @@
+---
+- name: Setup Kafka Cluster via KRaft
+  hosts: kafka_cluster
+  become: yes
+  vars:
+    kafka_version: "3.6.1"
+    kafka_dir: "/opt/kafka"
+    kafka_url: "https://archive.apache.org/dist/kafka/3.6.1/kafka_2.13-3.6.1.tgz"
+    cluster_id: "L999f8eSStS9hU9V7NfdyA" 
+
+  tasks:
+    - name: Cài đặt Java 17
+      apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    - name: Tải và giải nén Kafka
+      unarchive:
+        src: "{{ kafka_url }}"
+        dest: /opt
+        remote_src: yes
+        creates: "/opt/kafka_2.13-{{ kafka_version }}"
+
+    - name: Tạo symbolic link
+      file:
+        src: "/opt/kafka_2.13-{{ kafka_version }}"
+        dest: "{{ kafka_dir }}"
+        state: link
+
+    - name: Copy file cấu hình server.properties
+      template:
+        src: server.properties.j2
+        dest: "{{ kafka_dir }}/config/kraft/server.properties"
+
+    - name: Format Storage (KRaft)
+      command: 
+        cmd: "{{ kafka_dir }}/bin/kafka-storage.sh format -t {{ cluster_id }} -c {{ kafka_dir }}/config/kraft/server.properties"
+        creates: "/tmp/kraft-combined-logs/meta.properties"
+
+    - name: Tạo Systemd Service cho Kafka
+      copy:
+        dest: /etc/systemd/system/kafka.service
+        content: |
+          [Unit]
+          Description=Apache Kafka Server
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart={{ kafka_dir }}/bin/kafka-server-start.sh {{ kafka_dir }}/config/kraft/server.properties
+          ExecStop={{ kafka_dir }}/bin/kafka-server-stop.sh
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start Kafka Service
+      systemd:
+        name: kafka
+        state: started
+        enabled: yes
+        daemon_reload: yes

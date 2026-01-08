@@ -1,0 +1,12 @@
+# File: server.properties.j2
+node.id={{ node_id }}
+process.roles=broker,controller
+inter.broker.listener.name=PLAINTEXT
+controller.listener.names=CONTROLLER
+listeners=PLAINTEXT://:9092,CONTROLLER://:9093
+advertised.listeners=PLAINTEXT://{{ ansible_host }}:9092
+
+# Tự động tạo danh sách voters từ file hosts.ini
+controller.quorum.voters={% for host in groups['kafka_cluster'] %}{{ hostvars[host].node_id }}@{{ hostvars[host].ansible_host }}:9093{% if not loop.last %},{% endif %}{% endfor %}
+
+log.dirs=/tmp/kraft-combined-logs
