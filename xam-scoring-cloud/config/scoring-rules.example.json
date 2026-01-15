@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "scoring": {
+    "mode": "exact_match",
+    "negativeMarking": false,
+    "defaultPoints": 1
+  }
+}
