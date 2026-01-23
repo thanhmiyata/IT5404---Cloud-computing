@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: examdb
+      POSTGRES_USER: examuser
+      POSTGRES_PASSWORD: change-me
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+
+  exam-api:
+    build: ./services/exam-api
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./config/env.example
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: examdb
+      DB_USER: examuser
+      DB_PASSWORD: change-me
+      PUBSUB_DISABLED: "true"
+      SCORE_WORKER_URL: "http://score-worker:8080/v1/score"
+    depends_on:
+      - db
+
+  score-worker:
+    build: ./services/score-worker
+    ports:
+      - "8081:8080"
+    env_file:
+      - ./config/env.example
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: examdb
+      DB_USER: examuser
+      DB_PASSWORD: change-me
+    depends_on:
+      - db

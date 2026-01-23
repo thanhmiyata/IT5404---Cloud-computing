@@ -26,9 +26,9 @@ Xây dựng hệ thống chấm điểm thi trắc nghiệm online có khả nă
 - [ ] Chốt workflow demo + các metric cần chụp hình đưa vào báo cáo
 
 ### Phase 2 — Local dev bằng Docker (1–2 ngày)
-- [ ] Tạo 2 service: `exam-api`, `score-worker`
+- [x] Tạo 2 service: `exam-api`, `score-worker`
 - [ ] Tạo db schema + migration script
-- [ ] Docker compose: postgres + exam-api + score-worker
+- [x] Docker compose: postgres + exam-api + score-worker
 - [ ] Unit test scoring logic (nhỏ thôi)
 - [ ] Smoke test local: submit -> worker xử lý -> GET result thấy SCORED
 
@@ -57,9 +57,9 @@ Xây dựng hệ thống chấm điểm thi trắc nghiệm online có khả nă
 - [ ] (Optional) Hardening: push auth bằng OIDC, DLQ, rate limit, Redis cache
 
 ## 3) Checklist chức năng tối thiểu (MVP)
-- [ ] POST /exams/{examId}/submissions trả 202 + submissionId
-- [ ] GET /submissions/{submissionId} trả status (RECEIVED/SCORING/SCORED/FAILED) + score/total
-- [ ] Worker xử lý idempotent (Pub/Sub retry không tạo double score)
+- [x] POST /exams/{examId}/submissions trả 202 + submissionId
+- [x] GET /submissions/{submissionId} trả status (RECEIVED/SCORING/SCORED/FAILED) + score/total
+- [x] Worker xử lý idempotent (Pub/Sub retry không tạo double score)
 - [ ] DB schema chạy được
 - [ ] Seed 1 exam (>= 30–50 questions)
 - [ ] Logging có traceId/submissionId để debug
