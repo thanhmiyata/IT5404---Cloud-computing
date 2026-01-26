@@ -4,8 +4,9 @@
 Xây dựng hệ thống chấm điểm thi trắc nghiệm online có khả năng co giãn trên GCP, chứng minh bằng:
 - Kiến trúc decouple: API nhận bài trả 202 nhanh + Queue hấp thụ spike + Worker autoscale xử lý chấm điểm
 - Load test theo kịch bản spike cuối giờ thi
-- Dashboard/metrics: latency, error rate, backlog, autoscaling events
-- Demo: submit -> queue -> worker scale out -> kết quả scored
+- Dashboard/metrics: latency, error rate, backlog, autoscaling events (Real-time Dashboard)
+- Quản lý dữ liệu: Xem danh sách bài nộp, chi tiết câu trả lời của từng thí sinh
+- Demo: nộp bài -> xử lý queue -> UI cập nhật kết quả và bảng điểm thực tế từ Database
 
 ## 1) Kiến trúc chốt
 - Cloud Run service A: `exam-api` (HTTP public)  
@@ -19,6 +20,7 @@ Xây dựng hệ thống chấm điểm thi trắc nghiệm online có khả nă
 - Cloud SQL Postgres: lưu exams/questions/submissions/(submission_answers)
 - (Optional) Redis cache: cache answer key (để tối ưu, giai đoạn 2)
 - Cloud Monitoring/Logging: xem autoscale + backlog + latency
+- Monitoring Dashboard (Web UI): Frontend React/Vite hiển thị metrics tổng quan hệ thống.
 
 ## 2) Mốc công việc (theo tuần / theo buổi)
 ### Phase 1 — Spec & skeleton (0.5–1 ngày)
@@ -56,7 +58,13 @@ Xây dựng hệ thống chấm điểm thi trắc nghiệm online có khả nă
 - [ ] Slide: problem -> architecture -> scaling config -> experiments -> results -> lessons learned
 - [ ] (Optional) Hardening: push auth bằng OIDC, DLQ, rate limit, Redis cache
 
-## 3) Checklist chức năng tối thiểu (MVP)
+### Phase 6 — Admin & Monitoring Dashboard (1 ngày)
+- [ ] Xây dựng giao diện Admin: Quản lý đề thi và xem danh sách bài nộp của thí sinh.
+- [ ] Chi tiết bài nộp: Hiển thị breakdown từng câu trả lời đúng/sai của thí sinh.
+- [ ] Hệ thống Metrics thực tế: Kết nối API `/v1/internal/stats` để hiển thị biểu đồ và log từ Database.
+- [ ] Tích hợp biểu đồ Autoscaling dựa trên dữ liệu backlog thực tế.
+
+## 7) Checklist chức năng tối thiểu (MVP)
 - [x] POST /exams/{examId}/submissions trả 202 + submissionId
 - [x] GET /submissions/{submissionId} trả status (RECEIVED/SCORING/SCORED/FAILED) + score/total
 - [x] Worker xử lý idempotent (Pub/Sub retry không tạo double score)
@@ -92,5 +100,6 @@ Xây dựng hệ thống chấm điểm thi trắc nghiệm online có khả nă
 ## 7) Output cuối cùng cần nộp/đem bảo vệ
 - Repo code + docs spec
 - Script load test (k6)
+- Monitoring Dashboard (Web UI) source code
 - Ảnh chụp dashboard + bảng tổng hợp số liệu
 - Slide 15 phút + runbook demo

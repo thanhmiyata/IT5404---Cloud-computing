@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Exam Scoring - Monitoring Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .vibrant-blue { color: #38bdf8; }
+        .success-green { color: #4ade80; }
+        .danger-red { color: #f87171; }
+        
+        @keyframes pulse-custom {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .status-pulse {
+            animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-10">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight">System <span class="vibrant-blue">Overview</span></h1>
+            <p class="text-slate-400 mt-1">Real-time Cloud Run & Pub/Sub Monitoring</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+                <span class="w-2 h-2 rounded-full bg-green-500 status-pulse"></span>
+                <span class="text-sm font-medium">System Online</span>
+            </div>
+            <button class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition-all">
+                Export Report
+            </button>
+        </div>
+    </header>
+
+    <!-- Top Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Total Submissions</p>
+            <h3 class="text-3xl font-bold">12,402</h3>
+            <span class="text-xs text-green-400">↑ 12% from last hour</span>
+        </div>
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Queue Backlog (Pub/Sub)</p>
+            <h3 class="text-3xl font-bold text-orange-400">842</h3>
+            <span class="text-xs text-slate-400">Pending jobs</span>
+        </div>
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Processing Rate</p>
+            <h3 class="text-3xl font-bold vibrant-blue">145<span class="text-lg font-normal">/s</span></h3>
+            <span class="text-xs text-slate-400">Current throughput</span>
+        </div>
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Average Latency</p>
+            <h3 class="text-3xl font-bold">182<span class="text-lg font-normal">ms</span></h3>
+            <span class="text-xs text-green-400">Stable</span>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Main Scaling Chart -->
+        <div class="lg:col-span-2 glass p-6 rounded-2xl h-[400px]">
+            <div class="flex justify-between items-center mb-6">
+                <h4 class="font-semibold text-lg">Autoscaling Performance</h4>
+                <div class="flex gap-4 text-xs font-medium">
+                    <span class="flex items-center gap-1"><i class="w-3 h-3 bg-blue-500 rounded-full inline-block"></i> Instances</span>
+                    <span class="flex items-center gap-1"><i class="w-3 h-3 bg-orange-500 rounded-full inline-block"></i> Backlog</span>
+                </div>
+            </div>
+            <canvas id="scalingChart"></canvas>
+        </div>
+        
+        <!-- Health Cards -->
+        <div class="flex flex-col gap-6">
+            <div class="glass p-6 rounded-2xl flex-1">
+                <h4 class="font-semibold text-lg mb-4">Infrastructure Health</h4>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Cloud SQL CPU</span>
+                            <span>42%</span>
+                        </div>
+                        <div class="w-full bg-slate-700 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 42%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Worker Memory</span>
+                            <span>68%</span>
+                        </div>
+                        <div class="w-full bg-slate-700 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: 68%"></div>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-700 mt-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Active Instances</span>
+                            <span class="font-bold">24 (Max 100)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl flex-1 overflow-hidden">
+                <h4 class="font-semibold text-lg mb-4">Live Execution Feed</h4>
+                <div class="space-y-3 text-xs font-mono" id="logFeed">
+                    <div class="text-slate-400"><span class="success-green">[DONE]</span> Sub ID #5821 - Scored: 48/50</div>
+                    <div class="text-slate-400"><span class="vibrant-blue">[RECV]</span> Sub ID #5822 - Pushed to Queue</div>
+                    <div class="text-slate-400"><span class="success-green">[DONE]</span> Sub ID #5819 - Scored: 32/50</div>
+                    <div class="text-slate-400"><span class="vibrant-blue">[RECV]</span> Sub ID #5823 - Pushed to Queue</div>
+                    <div class="text-orange-400">[INFO] Scaling: Score-worker increased to 15</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('scalingChart').getContext('2d');
+        const scalingChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Instances',
+                    data: [],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Backlog',
+                    data: [],
+                    borderColor: '#f97316',
+                    borderDash: [5, 5],
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        async function updateDashboard() {
+            try {
+                const response = await fetch('http://localhost:8080/v1/internal/stats', {
+                    headers: { 'X-API-KEY': 'change-me' }
+                });
+                const data = await response.json();
+
+                // Update Stats
+                document.getElementById('total-subs').innerText = data.business.totalSubmissions;
+                document.getElementById('backlog-count').innerText = data.business.backlog;
+                document.getElementById('completed-count').innerText = data.business.completed;
+                
+                // Update Infrastructure
+                document.getElementById('cpu-bar').style.width = data.infrastructure.cpu + '%';
+                document.getElementById('cpu-text').innerText = data.infrastructure.cpu + '%';
+                document.getElementById('mem-bar').style.width = data.infrastructure.memory + '%';
+                document.getElementById('mem-text').innerText = data.infrastructure.memory + '%';
+                document.getElementById('active-instances').innerText = `${data.infrastructure.instances} (Max 100)`;
+
+                // Update Logs
+                const logFeed = document.getElementById('logFeed');
+                logFeed.innerHTML = data.logs.map(log => {
+                    const statusClass = log.status === 'SCORED' ? 'success-green' : 'vibrant-blue';
+                    const scoreText = log.status === 'SCORED' ? ` - Scored: ${log.score}/${log.total}` : '';
+                    return `<div class="text-slate-400">
+                        <span class="${statusClass}">[${log.status}]</span> 
+                        Sub ID #${log.submissionId.substring(4, 12)}...${scoreText}
+                    </div>`;
+                }).join('');
+
+                // Update Chart
+                const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                scalingChart.data.labels.push(now);
+                scalingChart.data.datasets[0].data.push(data.infrastructure.instances);
+                scalingChart.data.datasets[1].data.push(data.business.backlog);
+
+                if (scalingChart.data.labels.length > 15) {
+                    scalingChart.data.labels.shift();
+                    scalingChart.data.datasets[0].data.shift();
+                    scalingChart.data.datasets[1].data.shift();
+                }
+                scalingChart.update();
+
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+            }
+        }
+
+        // Add IDs to elements for updating
+        document.querySelector('h3:nth-of-type(1)').id = 'total-subs';
+        document.querySelectorAll('.glass h3')[0].id = 'total-subs';
+        document.querySelectorAll('.glass h3')[1].id = 'backlog-count';
+        document.querySelectorAll('.glass h3')[2].id = 'completed-count';
+        
+        // Re-target IDs specifically
+        const cards = document.querySelectorAll('.glass h3');
+        cards[0].id = 'total-subs';
+        cards[1].id = 'backlog-count';
+        cards[2].id = 'completed-count';
+        cards[3].id = 'avg-latency';
+
+        // Infrastructure IDs
+        const infraBars = document.querySelectorAll('.w-full.bg-slate-700.rounded-full div');
+        infraBars[0].id = 'cpu-bar';
+        infraBars[1].id = 'mem-bar';
+        const infraTexts = document.querySelectorAll('.flex.justify-between.text-sm span:nth-child(2)');
+        infraTexts[0].id = 'cpu-text';
+        infraTexts[1].id = 'mem-text';
+        document.querySelector('.pt-4 span.font-bold').id = 'active-instances';
+
+        setInterval(updateDashboard, 2000);
+        updateDashboard();
+    </script>
+</body>
+</html>

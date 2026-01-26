@@ -2,8 +2,10 @@ CREATE TABLE IF NOT EXISTS exams (
   exam_id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   version INT NOT NULL DEFAULT 1,
+  start_at TIMESTAMPTZ,
+  end_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+ );
 
 CREATE TABLE IF NOT EXISTS questions (
   question_id TEXT PRIMARY KEY,

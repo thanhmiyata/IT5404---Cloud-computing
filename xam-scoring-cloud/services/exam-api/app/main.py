@@ -21,7 +21,17 @@ PUBSUB_TOPIC = os.getenv("PUBSUB_TOPIC", "score-jobs")
 PUBSUB_DISABLED = os.getenv("PUBSUB_DISABLED", "false").lower() == "true"
 SCORE_WORKER_URL = os.getenv("SCORE_WORKER_URL")
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="exam-api", version="1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class AnswerItem(BaseModel):
@@ -94,9 +104,18 @@ def submit_exam(exam_id: str, body: SubmitRequest, _: None = Depends(_require_ap
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT exam_id FROM exams WHERE exam_id=%s", (exam_id,))
-                if cur.fetchone() is None:
+                cur.execute("SELECT exam_id, start_at, end_at FROM exams WHERE exam_id=%s", (exam_id,))
+                row = cur.fetchone()
+                if row is None:
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="exam not found")
+                
+                start_at, end_at = row[1], row[2]
+                now = datetime.now(timezone.utc)
+                
+                if start_at and now < start_at:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="exam has not started yet")
+                if end_at and now > end_at:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="exam has ended")
 
                 questions = _get_exam_questions(conn, exam_id)
                 total = sum(row[1] for row in questions) if questions else 0
@@ -182,6 +201,106 @@ def get_submission(submission_id: str, _: None = Depends(_require_api_key)):
     }
 
 
+@app.get("/v1/internal/stats")
+def get_stats(_: None = Depends(_require_api_key)):
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            # Total submissions
+            cur.execute("SELECT count(*) FROM submissions")
+            total = cur.fetchone()[0]
+
+            # Status breakdown
+            cur.execute("SELECT status, count(*) FROM submissions GROUP BY status")
+            status_rows = cur.fetchall()
+            status_map = {row[0]: row[1] for row in status_rows}
+
+            # Latest logs
+            cur.execute(
+                """
+                SELECT s.submission_id, s.status, s.score, s.total, s.received_at, s.exam_id, e.title, s.user_id
+                FROM submissions s
+                JOIN exams e ON s.exam_id = e.exam_id
+                ORDER BY s.received_at DESC
+                LIMIT 20
+                """
+            )
+            log_rows = cur.fetchall()
+            logs = [
+                {
+                    "submissionId": r[0],
+                    "status": r[1],
+                    "score": r[2],
+                    "total": r[3],
+                    "at": r[4].isoformat(),
+                    "examId": r[5],
+                    "examTitle": r[6],
+                    "userId": r[7]
+                } for r in log_rows
+            ]
+
+            # All Exams with timing
+            cur.execute("SELECT exam_id, title, start_at, end_at, created_at FROM exams ORDER BY created_at DESC")
+            exam_rows = cur.fetchall()
+            exams = []
+            now = datetime.now(timezone.utc)
+            for r in exam_rows:
+                status_str = "ACTIVE"
+                if r[2] and now < r[2]: status_str = "PENDING"
+                if r[3] and now > r[3]: status_str = "CLOSED"
+                
+                exams.append({
+                    "examId": r[0],
+                    "title": r[1],
+                    "startAt": r[2].isoformat() if r[2] else None,
+                    "endAt": r[3].isoformat() if r[3] else None,
+                    "createdAt": r[4].isoformat(),
+                    "status": status_str
+                })
+
+            # Performance Metrics (Throughput and Latency)
+            cur.execute(
+                """
+                SELECT 
+                    AVG(EXTRACT(EPOCH FROM (scored_at - received_at))) * 1000 as avg_latency,
+                    COUNT(*) FILTER (WHERE scored_at > now() - interval '5 minutes') / 5.0 as rate_per_min
+                FROM submissions
+                WHERE status = 'SCORED' AND scored_at IS NOT NULL
+                """
+            )
+            perf_row = cur.fetchone()
+            avg_latency = round(perf_row[0] or 0)
+            processing_rate = round(perf_row[1] or 0, 1)
+
+    finally:
+        put_conn(conn)
+
+    # Simulated infrastructure data for Demo
+    import random
+    backlog = status_map.get("RECEIVED", 0) + status_map.get("SCORING", 0)
+    
+    # Scale instances based on backlog
+    instances = max(1, min(50, backlog // 5 + 1))
+    
+    return {
+        "business": {
+            "totalSubmissions": total,
+            "backlog": backlog,
+            "completed": status_map.get("SCORED", 0),
+            "failed": status_map.get("FAILED", 0),
+            "throughput": processing_rate,
+            "latency": avg_latency
+        },
+        "infrastructure": {
+            "instances": instances,
+            "cpu": random.randint(30, 85) if backlog > 0 else random.randint(5, 15),
+            "memory": random.randint(40, 70),
+        },
+        "logs": logs,
+        "exams": exams
+    }
+
+
 class AdminQuestion(BaseModel):
     questionId: str = Field(..., min_length=1)
     correctChoice: str = Field(..., min_length=1)
@@ -191,7 +310,34 @@ class AdminQuestion(BaseModel):
 class AdminExam(BaseModel):
     examId: str = Field(..., min_length=1)
     title: str = Field(..., min_length=1)
+    startAt: str | None = None
+    endAt: str | None = None
     questions: list[AdminQuestion]
+
+
+@app.get("/v1/admin/exams/{exam_id}")
+def get_exam_detail(exam_id: str, _: None = Depends(_require_api_key)):
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT exam_id, title, start_at, end_at FROM exams WHERE exam_id=%s", (exam_id,))
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="exam not found")
+            
+            cur.execute("SELECT question_id, correct_choice, points FROM questions WHERE exam_id=%s", (exam_id,))
+            q_rows = cur.fetchall()
+            questions = [{"questionId": r[0], "correctChoice": r[1], "points": r[2]} for r in q_rows]
+            
+            return {
+                "examId": row[0],
+                "title": row[1],
+                "startAt": row[2].isoformat() if row[2] else None,
+                "endAt": row[3].isoformat() if row[3] else None,
+                "questions": questions
+            }
+    finally:
+        put_conn(conn)
 
 
 @app.post("/v1/admin/exams")
@@ -202,11 +348,11 @@ def create_exam(body: AdminExam, _: None = Depends(_require_api_key)):
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO exams (exam_id, title)
-                    VALUES (%s, %s)
-                    ON CONFLICT (exam_id) DO UPDATE SET title=EXCLUDED.title
+                    INSERT INTO exams (exam_id, title, start_at, end_at)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (exam_id) DO UPDATE SET title=EXCLUDED.title, start_at=EXCLUDED.start_at, end_at=EXCLUDED.end_at
                     """,
-                    (body.examId, body.title),
+                    (body.examId, body.title, body.startAt, body.endAt),
                 )
                 cur.execute("DELETE FROM questions WHERE exam_id=%s", (body.examId,))
                 for q in body.questions:

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Cloud Admin - Real-time Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f1f5f9; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .tab-active { border-bottom: 2px solid #38bdf8; color: #38bdf8; }
+        .btn-primary { background-color: #0284c7; transition: all 0.2s; }
+        .btn-primary:hover { background-color: #0369a1; transform: translateY(-1px); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .modal { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Sidebar / Top Nav -->
+    <nav class="border-b border-slate-800 bg-slate-900/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center font-bold">X</div>
+                <h1 class="text-xl font-bold">ExamCloud <span class="text-sky-400">Admin</span></h1>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full border border-slate-700">
+                    <span id="conn-indicator" class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span id="conn-text" class="text-xs font-medium text-slate-400">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tabs Navigation -->
+    <div class="max-w-7xl mx-auto px-6 mt-6">
+        <div class="flex gap-8 border-b border-slate-800">
+            <button onclick="switchTab('system')" id="tab-system" class="pb-3 px-2 text-sm font-medium tab-active">System Monitoring</button>
+            <button onclick="switchTab('submissions')" id="tab-submissions" class="pb-3 px-2 text-sm font-medium text-slate-400 hover:text-slate-200">Submissions</button>
+            <button onclick="switchTab('exam')" id="tab-exam" class="pb-3 px-2 text-sm font-medium text-slate-400 hover:text-slate-200">Exam Management</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        
+        <!-- Tab: System Monitoring -->
+        <div id="content-system" class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                <div class="glass p-6 rounded-2xl">
+                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-2">Total Submits</p>
+                    <h3 id="m-total" class="text-3xl font-bold">0</h3>
+                </div>
+                <div class="glass p-6 rounded-2xl border-l-4 border-orange-500">
+                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-2">Backlog</p>
+                    <h3 id="m-backlog" class="text-3xl font-bold text-orange-400">0</h3>
+                </div>
+                <div class="glass p-6 rounded-2xl">
+                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-2">In-Flight</p>
+                    <h3 id="m-instances" class="text-3xl font-bold text-sky-400">0</h3>
+                </div>
+                <div class="glass p-6 rounded-2xl border-l-4 border-emerald-500">
+                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-2">Throughput</p>
+                    <div class="flex items-baseline gap-1">
+                        <h3 id="m-throughput" class="text-3xl font-bold text-emerald-400">0</h3>
+                        <span class="text-[10px] text-slate-500 font-bold uppercase">sub/m</span>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-2xl border-l-4 border-purple-500">
+                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-2">Avg Latency</p>
+                    <div class="flex items-baseline gap-1">
+                        <h3 id="m-latency" class="text-3xl font-bold text-purple-400">0</h3>
+                        <span class="text-[10px] text-slate-500 font-bold uppercase">ms</span>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-2xl">
+                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-2">Completed</p>
+                    <h3 id="m-completed" class="text-3xl font-bold">0</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 glass p-6 rounded-2xl h-[450px]">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="font-semibold">Autoscaling & Traffic Trend</h4>
+                        <div class="flex gap-4 text-[10px] items-center uppercase font-bold text-slate-500">
+                            <span class="flex items-center gap-1"><i class="w-2 h-2 bg-sky-500 rounded-full"></i> Instances</span>
+                            <span class="flex items-center gap-1"><i class="w-2 h-2 bg-orange-500 rounded-full border-dashed"></i> Backlog</span>
+                        </div>
+                    </div>
+                    <canvas id="sysChart"></canvas>
+                </div>
+                <div class="glass p-6 rounded-2xl overflow-hidden flex flex-col">
+                    <h4 class="font-semibold mb-4">Infrastructure Health</h4>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-xs mb-2">
+                                <span class="text-slate-400">Cloud Run CPU (Sim)</span>
+                                <span id="cpu-val" class="font-mono text-sky-400">0%</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-slate-800 rounded-full">
+                                <div id="cpu-bar" class="h-full bg-sky-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-2">
+                                <span class="text-slate-400">Worker Memory (Sim)</span>
+                                <span id="mem-val" class="font-mono text-purple-400">0%</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-slate-800 rounded-full">
+                                <div id="mem-bar" class="h-full bg-purple-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Submissions List -->
+        <div id="content-submissions" class="hidden glass rounded-2xl overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h4 class="font-semibold">Bảng điểm & Bài nộp gần đây</h4>
+                <span class="text-xs text-slate-500">Auto-refresh mỗi 2s</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-xs font-semibold text-slate-500 uppercase bg-slate-800/50">
+                            <th class="px-6 py-4">Student</th>
+                            <th class="px-6 py-4">Exam</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Score</th>
+                            <th class="px-6 py-4">Time</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sub-table-body" class="text-sm divide-y divide-slate-800">
+                        <!-- Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Exam Management -->
+        <div id="content-exam" class="hidden space-y-8">
+            <div class="max-w-5xl mx-auto space-y-8">
+                <!-- Exam Table -->
+                <div class="glass rounded-2xl overflow-hidden">
+                    <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                        <h4 class="font-semibold">Danh sách đề thi & Lộ trình thời gian</h4>
+                        <button onclick="openCreateModal()" class="btn-primary px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all">
+                            <span class="text-xl">+</span> Thêm mới đề thi
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-xs font-semibold text-slate-500 uppercase bg-slate-800/50">
+                                    <th class="px-6 py-4">Title</th>
+                                    <th class="px-6 py-4">Start At</th>
+                                    <th class="px-6 py-4">End At</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exam-table-body" class="text-sm divide-y divide-slate-800">
+                                <!-- Exam Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Create Exam -->
+    <div id="create-modal" class="modal fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="glass w-full max-w-2xl rounded-2xl p-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-6">
+                <h3 class="text-xl font-bold">Tạo đề thi mới</h3>
+                <button onclick="closeCreateModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Exam ID</label>
+                        <input type="text" id="exam-id" placeholder="e.g. final-01" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none focus:border-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Title</label>
+                        <input type="text" id="exam-title" placeholder="Kỳ thi cuối kỳ" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none focus:border-sky-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Start At</label>
+                        <input type="datetime-local" id="exam-start" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none focus:border-sky-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">End At</label>
+                        <input type="datetime-local" id="exam-end" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none focus:border-sky-500 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2">Questions (JSON format)</label>
+                    <textarea id="exam-questions" rows="8" placeholder='[
+  {"questionId": "q1", "correctChoice": "A", "points": 10}
+]' class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none focus:border-sky-500 font-mono text-sm"></textarea>
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="closeCreateModal()" class="flex-1 px-4 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 font-bold transition-all">Hủy bỏ</button>
+                    <button onclick="createExam()" class="flex-[2] btn-primary py-3 rounded-xl font-bold">Publish Exam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Modal for Exam Detail -->
+    <div id="exam-modal" class="modal fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="glass w-full max-w-xl rounded-2xl p-8 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-xl font-bold" id="exam-modal-title">Chi tiết đề thi</h3>
+                    <p id="exam-modal-id" class="text-xs text-slate-400 font-mono"></p>
+                </div>
+                <button onclick="closeExamModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div id="exam-modal-content" class="space-y-4">
+                <!-- Question List -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Modal for Submission -->
+    <div id="sub-modal" class="modal fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="glass w-full max-w-xl rounded-2xl p-8 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-xl font-bold">Chi tiết bài làm</h3>
+                    <p id="modal-sub-id" class="text-xs text-slate-400 font-mono"></p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div id="modal-content" class="space-y-4">
+                <!-- Breakdown -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/v1';
+        const API_KEY = 'change-me';
+        let currentTab = 'system';
+
+        // Chart Setup
+        const ctx = document.getElementById('sysChart').getContext('2d');
+        const sysChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Instances', data: [], borderColor: '#38bdf8', borderWidth: 2, tension: 0.4, fill: false },
+                    { label: 'Backlog', data: [], borderColor: '#fb923c', borderWidth: 2, borderDash: [5, 5], tension: 0.4, fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            
+            document.querySelectorAll('nav + div button').forEach(el => {
+                el.classList.remove('tab-active', 'text-sky-400');
+                el.classList.add('text-slate-400');
+            });
+            document.getElementById(`tab-${tab}`).classList.add('tab-active', 'text-sky-400');
+            document.getElementById(`tab-${tab}`).classList.remove('text-slate-400');
+        }
+
+        function openCreateModal() {
+            document.getElementById('create-modal').classList.replace('hidden', 'flex');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('create-modal').classList.replace('flex', 'hidden');
+        }
+
+        async function createExam() {
+            const id = document.getElementById('exam-id').value;
+            const title = document.getElementById('exam-title').value;
+            const startAt = document.getElementById('exam-start').value || null;
+            const endAt = document.getElementById('exam-end').value || null;
+            const questionsRaw = document.getElementById('exam-questions').value;
+
+            try {
+                const questions = JSON.parse(questionsRaw);
+                const res = await fetch(`${API_BASE}/admin/exams`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY },
+                    body: JSON.stringify({ 
+                        examId: id, 
+                        title, 
+                        startAt: startAt ? new Date(startAt).toISOString() : null,
+                        endAt: endAt ? new Date(endAt).toISOString() : null,
+                        questions 
+                    })
+                });
+                if (res.ok) {
+                    alert('Exam created successfully!');
+                    closeCreateModal();
+                } else {
+                    const error = await res.json();
+                    alert('Failed: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (e) {
+                alert('Invalid JSON or error: ' + e.message);
+            }
+        }
+
+        async function openExamDetail(id) {
+            try {
+                const res = await fetch(`${API_BASE}/admin/exams/${id}`, {
+                    headers: { 'X-API-KEY': API_KEY }
+                });
+                const data = await res.json();
+                
+                document.getElementById('exam-modal-title').innerText = data.title;
+                document.getElementById('exam-modal-id').innerText = `ID: ${data.examId}`;
+                
+                let html = '<div class="space-y-4">';
+                data.questions.forEach(q => {
+                    html += `<div class="p-4 bg-slate-800 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-sky-400">${q.questionId}</span>
+                            <span class="px-2 py-0.5 bg-slate-700 rounded text-[10px] font-bold">Key: ${q.correctChoice}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Points: ${q.points}</p>
+                    </div>`;
+                });
+                html += '</div>';
+                
+                document.getElementById('exam-modal-content').innerHTML = html;
+                document.getElementById('exam-modal').classList.replace('hidden', 'flex');
+            } catch (e) { console.error(e); }
+        }
+
+        function closeExamModal() {
+            document.getElementById('exam-modal').classList.replace('flex', 'hidden');
+        }
+
+        async function openSubmissionDetail(id) {
+            try {
+                const res = await fetch(`${API_BASE}/submissions/${id}`, {
+                    headers: { 'X-API-KEY': API_KEY }
+                });
+                const data = await res.json();
+                
+                document.getElementById('modal-sub-id').innerText = data.submissionId;
+                const container = document.getElementById('modal-content');
+                
+                let html = `<div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="p-4 bg-slate-800 rounded-xl"><p class="text-[10px] text-slate-400 uppercase">Student ID</p><p class="font-bold">${data.userId}</p></div>
+                    <div class="p-4 bg-slate-800 rounded-xl"><p class="text-[10px] text-slate-400 uppercase">Total Score</p><p class="font-bold text-sky-400">${data.score}/${data.total}</p></div>
+                </div>`;
+                
+                html += '<h5 class="font-semibold text-sm mb-3">Câu trả lời chi tiết:</h5><div class="space-y-2">';
+                data.breakdown.forEach(b => {
+                    html += `<div class="flex justify-between items-center p-3 rounded-lg ${b.isCorrect ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-red-500/10 border border-red-500/20'}">
+                        <span class="text-sm font-medium">Question: ${b.questionId}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-bold uppercase ${b.isCorrect ? 'text-emerald-400' : 'text-red-400'}">${b.isCorrect ? 'Correct' : 'Incorrect'}</span>
+                            <span class="font-mono text-xs">+${b.points} pts</span>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                
+                container.innerHTML = html;
+                document.getElementById('sub-modal').classList.replace('hidden', 'flex');
+            } catch (e) { console.error(e); }
+        }
+
+        function closeModal() {
+            document.getElementById('sub-modal').classList.replace('flex', 'hidden');
+        }
+
+        async function monitor() {
+            try {
+                const res = await fetch(`${API_BASE}/internal/stats`, {
+                    headers: { 'X-API-KEY': API_KEY }
+                });
+                const data = await res.json();
+
+                // Update Overview Stats
+                document.getElementById('m-total').innerText = data.business.totalSubmissions;
+                document.getElementById('m-backlog').innerText = data.business.backlog;
+                document.getElementById('m-completed').innerText = data.business.completed;
+                document.getElementById('m-instances').innerText = data.infrastructure.instances;
+                document.getElementById('m-throughput').innerText = data.business.throughput;
+                document.getElementById('m-latency').innerText = data.business.latency;
+
+                // Update Infrastructure Bars
+                document.getElementById('cpu-val').innerText = `${data.infrastructure.cpu}%`;
+                document.getElementById('cpu-bar').style.width = `${data.infrastructure.cpu}%`;
+                document.getElementById('mem-val').innerText = `${data.infrastructure.memory}%`;
+                document.getElementById('mem-bar').style.width = `${data.infrastructure.memory}%`;
+
+                // Update Chart
+                const now = new Date().toLocaleTimeString([], { hour12: false, second: '2-digit' });
+                sysChart.data.labels.push(now);
+                sysChart.data.datasets[0].data.push(data.infrastructure.instances);
+                sysChart.data.datasets[1].data.push(data.business.backlog);
+                if (sysChart.data.labels.length > 20) {
+                    sysChart.data.labels.shift();
+                    sysChart.data.datasets.forEach(d => d.data.shift());
+                }
+                sysChart.update('none');
+
+                // Update Submissions Table
+                const tableBody = document.getElementById('sub-table-body');
+                tableBody.innerHTML = data.logs.map(l => {
+                    const statusColor = l.status === 'SCORED' ? 'text-emerald-400' : 'text-orange-400';
+                    return `<tr>
+                        <td class="px-6 py-4 font-medium">${l.userId}</td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-400">${l.examTitle}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full bg-slate-800 text-[10px] font-bold ${statusColor}">${l.status}</span></td>
+                        <td class="px-6 py-4 font-semibold">${l.score ?? '-'}/${l.total}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500">${new Date(l.at).toLocaleString()}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="openSubmissionDetail('${l.submissionId}')" class="text-sky-400 hover:text-sky-300 text-xs font-bold transition-colors">View Detail</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                // Update Exams Table
+                const examTableBody = document.getElementById('exam-table-body');
+                examTableBody.innerHTML = data.exams.map(e => {
+                    let statusClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    if (e.status === 'PENDING') statusClass = "bg-sky-500/10 text-sky-400 border-sky-500/20";
+                    if (e.status === 'CLOSED') statusClass = "bg-red-500/10 text-red-400 border-red-500/20";
+
+                    return `<tr>
+                        <td class="px-6 py-4 font-semibold">${e.title} <p class="text-[10px] font-mono text-slate-500">${e.examId}</p></td>
+                        <td class="px-6 py-4 text-xs text-slate-300">${e.startAt ? new Date(e.startAt).toLocaleString() : 'N/A'}</td>
+                        <td class="px-6 py-4 text-xs text-slate-300">${e.endAt ? new Date(e.endAt).toLocaleString() : 'N/A'}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold border ${statusClass}">${e.status}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="openExamDetail('${e.examId}')" class="text-sky-400 hover:text-sky-300 text-xs font-bold">View Detail</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                // Status Indicator
+                document.getElementById('conn-indicator').className = 'w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+                document.getElementById('conn-text').innerText = 'System Live';
+
+            } catch (err) {
+                document.getElementById('conn-indicator').className = 'w-2 h-2 rounded-full bg-red-500';
+                document.getElementById('conn-text').innerText = 'API Disconnected';
+            }
+        }
+
+        setInterval(monitor, 2000);
+        monitor();
+    </script>
+</body>
+</html>

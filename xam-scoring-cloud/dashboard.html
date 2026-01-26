@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Exam Scoring - Real-time Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .vibrant-blue { color: #38bdf8; }
+        .success-green { color: #4ade80; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .status-pulse { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+    <header class="flex justify-between items-center mb-10">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight">System <span class="vibrant-blue">Overview</span></h1>
+            <p class="text-slate-400 mt-1">Dữ liệu được lấy trực tiếp từ API hệ thống</p>
+        </div>
+        <div class="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+            <span id="connection-dot" class="w-2 h-2 rounded-full bg-red-500"></span>
+            <span id="connection-status" class="text-sm font-medium">Connecting...</span>
+        </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Total Submissions</p>
+            <h3 id="stat-total" class="text-3xl font-bold">0</h3>
+        </div>
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Queue Backlog</p>
+            <h3 id="stat-backlog" class="text-3xl font-bold text-orange-400">0</h3>
+        </div>
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Completed Jobs</p>
+            <h3 id="stat-completed" class="text-3xl font-bold success-green">0</h3>
+        </div>
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-sm font-medium text-slate-400 mb-1">Processing Instances</p>
+            <h3 id="stat-instances" class="text-3xl font-bold vibrant-blue">0</h3>
+        </div>
+    </div>
+
+    <!-- Charts & Logs -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2 glass p-6 rounded-2xl h-[400px]">
+            <h4 class="font-semibold text-lg mb-6 text-slate-400">Scaling & Backlog History</h4>
+            <canvas id="mainChart"></canvas>
+        </div>
+        
+        <div class="glass p-6 rounded-2xl flex flex-col">
+            <h4 class="font-semibold text-lg mb-4 text-slate-400">Live Logs (Real DB)</h4>
+            <div id="log-list" class="space-y-3 text-xs font-mono overflow-y-auto max-h-[300px]">
+                <!-- Logs will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/v1/internal/stats';
+        const API_KEY = 'change-me';
+
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Instances', data: [], borderColor: '#3b82f6', tension: 0.4, fill: false },
+                    { label: 'Backlog', data: [], borderColor: '#f97316', tension: 0.4, borderDash: [5, 5], fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        async function refresh() {
+            try {
+                const res = await fetch(API_URL, { headers: { 'X-API-KEY': API_KEY } });
+                const data = await res.json();
+
+                // Update Stats
+                document.getElementById('stat-total').innerText = data.business.totalSubmissions;
+                document.getElementById('stat-backlog').innerText = data.business.backlog;
+                document.getElementById('stat-completed').innerText = data.business.completed;
+                document.getElementById('stat-instances').innerText = data.infrastructure.instances;
+
+                // Update Logs
+                const logContainer = document.getElementById('log-list');
+                logContainer.innerHTML = data.logs.map(l => `
+                    <div class="border-b border-slate-700 pb-2">
+                        <span class="${l.status === 'SCORED' ? 'success-green' : 'text-orange-400'}">[${l.status}]</span>
+                        ID: ${l.submissionId.slice(-8)} | Score: ${l.score ?? '?'}/${l.total}
+                    </div>
+                `).join('');
+
+                // Update Chart
+                const time = new Date().toLocaleTimeString([], { hour12: false });
+                chart.data.labels.push(time);
+                chart.data.datasets[0].data.push(data.infrastructure.instances);
+                chart.data.datasets[1].data.push(data.business.backlog);
+                
+                if (chart.data.labels.length > 20) {
+                    chart.data.labels.shift();
+                    chart.data.datasets.forEach(d => d.data.shift());
+                }
+                chart.update('none');
+
+                document.getElementById('connection-dot').className = 'w-2 h-2 rounded-full bg-green-500 status-pulse';
+                document.getElementById('connection-status').innerText = 'Connected to API';
+            } catch (err) {
+                console.error(err);
+                document.getElementById('connection-dot').className = 'w-2 h-2 rounded-full bg-red-500';
+                document.getElementById('connection-status').innerText = 'API Connection Error';
+            }
+        }
+
+        setInterval(refresh, 2000);
+        refresh();
+    </script>
+</body>
+</html>
