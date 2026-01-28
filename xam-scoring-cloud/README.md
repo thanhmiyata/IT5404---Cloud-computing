@@ -74,6 +74,26 @@ curl -X POST http://<PUBLIC_IP>:8080/v1/exams/exam_001/submissions \
   }'
 ```
 
+## Load Testing / Spike Demo
+
+To show the "End-of-Exam" scenario where hundreds of students submit simultaneously, use the included demo script. This script simulates traffic bursts and monitors the queue backlog in real-time.
+
+```bash
+# 1. Provide permission
+chmod +x scripts/demo_spike.py
+
+# 2. Run the demo (Defaults: 1000 requests, localhost)
+python3 scripts/demo_spike.py
+
+# 3. Run with custom parameters (e.g., target Public IP)
+python3 scripts/demo_spike.py -n 2000 -c 100 --url http://<PUBLIC_IP>:8080/v1/exams/exam_001/submissions
+```
+
+**What happens:**
+1. **Baseline**: Checks current queue status.
+2. **Burst**: Sends N asynchronous requests.
+3. **Drain**: Monitors the system working through the backlog until empty.
+
 ## Troubleshooting
 - If the endpoint returns `Connection refused`: Check Docker containers (`docker-compose ps`) and Firewall rules.
 - If Dashboard shows "Connection Error": Ensure `config.js` has the correct IP and Mixed Content (HTTP/HTTPS) is not blocking requests if using SSL (currently HTTP only).
