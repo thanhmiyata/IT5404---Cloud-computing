@@ -76,23 +76,43 @@ curl -X POST http://<PUBLIC_IP>:8080/v1/exams/exam_001/submissions \
 
 ## Load Testing / Spike Demo
 
-To show the "End-of-Exam" scenario where hundreds of students submit simultaneously, use the included demo script. This script simulates traffic bursts and monitors the queue backlog in real-time.
+Simulate the "End-of-Exam" scenario where hundreds of students submit simultaneously.
+
+### Option 1: Quick Demo with Live Monitoring
+
+Uses `demo_spike.py` which shows baseline → burst → drain cycle with live stats.
 
 ```bash
-# 1. Provide permission
-chmod +x scripts/demo_spike.py
-
-# 2. Run the demo (Defaults: 1000 requests, localhost)
+# Default: 1000 submissions to localhost
 python3 scripts/demo_spike.py
 
-# 3. Run with custom parameters (e.g., target Public IP)
+# Custom target and count
 python3 scripts/demo_spike.py -n 2000 -c 100 --url http://<PUBLIC_IP>:8080/v1/exams/exam_001/submissions
 ```
 
-**What happens:**
-1. **Baseline**: Checks current queue status.
-2. **Burst**: Sends N asynchronous requests.
-3. **Drain**: Monitors the system working through the backlog until empty.
+### Option 2: Detailed Metrics Test
+
+Uses `spike_load_test.py` for comprehensive metrics (p95/p99 latency, throughput, completion tracking).
+
+```bash
+# Basic spike test (1000 concurrent submissions)
+python3 scripts/spike_load_test.py
+
+# Test against remote VM
+python3 scripts/spike_load_test.py --url http://<PUBLIC_IP>:8080 --count 1000
+
+# Full test: wait until all submissions are SCORED
+python3 scripts/spike_load_test.py --poll --poll-timeout 300
+
+# Save results to JSON
+python3 scripts/spike_load_test.py --poll --output results.json
+```
+
+**Metrics collected:**
+- Success/failure rate
+- Response time (avg, min, max, p95, p99)
+- Throughput (submissions/sec)
+- Time to complete all scoring (with `--poll`)
 
 ## Troubleshooting
 - If the endpoint returns `Connection refused`: Check Docker containers (`docker-compose ps`) and Firewall rules.
