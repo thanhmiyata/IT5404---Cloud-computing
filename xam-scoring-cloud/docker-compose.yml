@@ -29,6 +29,7 @@ services:
       SCORE_WORKER_URL: "http://score-worker:8080/v1/score"
     depends_on:
       - db
+    restart: always
 
   score-worker:
     build: ./services/score-worker
@@ -44,3 +45,4 @@ services:
       DB_PASSWORD: change-me
     depends_on:
       - db
+    restart: always

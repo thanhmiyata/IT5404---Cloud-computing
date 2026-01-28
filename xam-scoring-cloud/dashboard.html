@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +15,8 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .status-pulse { animation: pulse 2s infinite; }
     </style>
+    <!-- Load Configuration -->
+    <script src="config.js"></script>
 </head>
 <body class="p-6 md:p-10">
     <header class="flex justify-between items-center mb-10">
@@ -64,8 +66,9 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:8080/v1/internal/stats';
-        const API_KEY = 'change-me';
+        // Load settings from config.js
+        const API_URL = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.API_URL : 'http://localhost:8080/v1/internal/stats';
+        const API_KEY = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.API_KEY : 'change-me';
 
         const ctx = document.getElementById('mainChart').getContext('2d');
         const chart = new Chart(ctx, {

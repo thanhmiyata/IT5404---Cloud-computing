@@ -1,0 +1,20 @@
+# Common
+APP_ENV=dev
+LOG_LEVEL=info
+
+# GCP
+GCP_PROJECT_ID=your-project-id
+PUBSUB_TOPIC=score-jobs
+PUBSUB_DISABLED=false
+SCORE_WORKER_URL=
+
+# Database
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_NAME=examdb
+DB_USER=examuser
+DB_PASSWORD=change-me
+
+# Auth (demo)
+JWT_SECRET=change-me
+API_KEY=change-me
