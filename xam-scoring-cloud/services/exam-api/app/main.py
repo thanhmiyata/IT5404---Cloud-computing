@@ -280,7 +280,8 @@ def get_stats(_: None = Depends(_require_api_key)):
     backlog = status_map.get("RECEIVED", 0) + status_map.get("SCORING", 0)
     
     # Scale instances based on backlog
-    instances = max(1, min(50, backlog // 5 + 1))
+    # instances = max(1, min(50, backlog // 5 + 1))
+    instances = max(1, min(50, backlog // 2 + 1)) # More sensitive scaling for demo
     
     return {
         "business": {

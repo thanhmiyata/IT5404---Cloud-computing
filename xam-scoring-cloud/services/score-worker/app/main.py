@@ -2,6 +2,7 @@ import base64
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, status
@@ -88,6 +89,9 @@ def score_job(payload: dict):
                     "UPDATE submissions SET status='SCORING' WHERE submission_id=%s",
                     (submission_id,),
                 )
+                
+                # Simulate heavier processing for demo visibility
+                time.sleep(0.1)
 
                 questions = _fetch_questions(conn, exam_id)
                 if not questions:

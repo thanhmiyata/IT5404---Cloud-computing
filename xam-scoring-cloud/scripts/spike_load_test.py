@@ -288,7 +288,7 @@ Examples:
   python spike_load_test.py
 
   # Custom endpoint and count
-  python spike_load_test.py --url http://34.143.226.181:8080 --count 500
+  python spike_load_test.py --url http://136.110.44.49:8080 --count 500
 
   # Full test with completion polling
   python spike_load_test.py --poll --poll-timeout 300

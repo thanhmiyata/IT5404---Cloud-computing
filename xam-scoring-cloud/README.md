@@ -18,7 +18,7 @@ Create a `.env` file in the **project root** (parent directory of `xam-scoring-c
 
 ```bash
 # Example: /root/IT5404---Cloud-computing/.env
-PUBLIC_IP="34.143.226.181"
+PUBLIC_IP="136.110.44.49"
 ```
 
 > **Note**: The `generate_config.sh` script looks for `../.env` by default.
