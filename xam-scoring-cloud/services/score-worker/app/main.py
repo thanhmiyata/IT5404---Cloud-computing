@@ -65,32 +65,34 @@ def score_job(payload: dict):
     - Scoring the answers.
     - Updating the submission status.
     """
+    submission_id = None
+    conn = None
     try:
-        job = _parse_job(payload)
-    except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        # 1. Safe parsing of payload
+        try:
+            job = _parse_job(payload)
+            submission_id = job.get("submissionId")
+            exam_id = job.get("examId")
+            answers = job.get("answers", [])
+        except Exception as exc:
+            logger.error("Failed to parse payload: %s", exc)
+            return {"ok": True, "error": "invalid_payload"}
 
-    submission_id = job.get("submissionId")
-    exam_id = job.get("examId")
-    answers = job.get("answers", [])
-    if not submission_id or not exam_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="missing identifiers")
+        if not submission_id or not exam_id:
+            logger.error("Missing submissionId or examId: %s", payload)
+            return {"ok": True, "error": "missing_identifiers"}
 
-    conn = get_conn()
-    try:
+        # 2. Score logic
+        conn = get_conn()
         with conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    """
-                    SELECT status FROM submissions
-                    WHERE submission_id=%s
-                    FOR UPDATE
-                    """,
+                    "SELECT status FROM submissions WHERE submission_id=%s FOR UPDATE",
                     (submission_id,),
                 )
                 row = cur.fetchone()
                 if row is None:
-                    logger.warning("submission not found: %s", submission_id)
+                    logger.warning("Submission not found: %s", submission_id)
                     return {"ok": True}
                 if row[0] == "SCORED":
                     return {"ok": True}
@@ -101,17 +103,12 @@ def score_job(payload: dict):
                 )
                 
                 # Simulate heavier processing for demo visibility
-                # time.sleep(1.0)
                 time.sleep(0.2)
 
                 questions = _fetch_questions(conn, exam_id)
                 if not questions:
                     cur.execute(
-                        """
-                        UPDATE submissions
-                        SET status='FAILED', error_message=%s
-                        WHERE submission_id=%s
-                        """,
+                        "UPDATE submissions SET status='FAILED', error_message=%s WHERE submission_id=%s",
                         ("no questions for exam", submission_id),
                     )
                     return {"ok": True}
@@ -131,14 +128,12 @@ def score_job(payload: dict):
                     is_correct = choice == correct
                     if is_correct:
                         score += points
-                    breakdown.append(
-                        {
-                            "questionId": qid,
-                            "choice": choice,
-                            "isCorrect": is_correct,
-                            "points": points if is_correct else 0,
-                        }
-                    )
+                    breakdown.append({
+                        "questionId": qid,
+                        "choice": choice,
+                        "isCorrect": is_correct,
+                        "points": points if is_correct else 0,
+                    })
 
                 cur.execute("DELETE FROM submission_answers WHERE submission_id=%s", (submission_id,))
                 for item in breakdown:
@@ -147,37 +142,28 @@ def score_job(payload: dict):
                         INSERT INTO submission_answers (submission_id, question_id, choice, is_correct, points)
                         VALUES (%s, %s, %s, %s, %s)
                         """,
-                        (
-                            submission_id,
-                            item["questionId"],
-                            item["choice"],
-                            item["isCorrect"],
-                            item["points"],
-                        ),
+                        (submission_id, item["questionId"], item["choice"], item["isCorrect"], item["points"]),
                     )
 
                 cur.execute(
-                    """
-                    UPDATE submissions
-                    SET status='SCORED', score=%s, total=%s, scored_at=%s
-                    WHERE submission_id=%s
-                    """,
+                    "UPDATE submissions SET status='SCORED', score=%s, total=%s, scored_at=%s WHERE submission_id=%s",
                     (score, total, _now_iso(), submission_id),
                 )
     except Exception as exc:
-        logger.exception("scoring failed: %s", exc)
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    UPDATE submissions
-                    SET status='FAILED', error_message=%s
-                    WHERE submission_id=%s
-                    """,
-                    (str(exc), submission_id),
-                )
-        return {"ok": True}
+        logger.exception("Scoring fatal error: %s", exc)
+        if submission_id and conn:
+            try:
+                with conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "UPDATE submissions SET status='FAILED', error_message=%s WHERE submission_id=%s",
+                            (str(exc), submission_id),
+                        )
+            except Exception as db_exc:
+                logger.error("Could not mark failed status in DB: %s", db_exc)
     finally:
-        put_conn(conn)
+        if conn:
+            put_conn(conn)
 
+    # Always return 200 OK to Pub/Sub
     return {"ok": True}
