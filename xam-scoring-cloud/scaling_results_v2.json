@@ -1,0 +1,222 @@
+{
+  "test_config": {
+    "api_url": "http://localhost:8080",
+    "exam_id": "exam_001",
+    "total_submissions": 10000,
+    "batch_size": 100,
+    "max_workers": 100,
+    "timestamp": "2026-02-11T08:47:59Z"
+  },
+  "result": {
+    "passed": false,
+    "total_submissions": 10000,
+    "successful_submissions": 9998,
+    "failed_submissions": 2,
+    "error_rate_percent": 0.02,
+    "baseline_instances": 1,
+    "peak_instances": 1,
+    "final_instances": 1,
+    "scale_up_ratio": 1.0,
+    "baseline_backlog": 2,
+    "peak_backlog": 2,
+    "final_backlog": 2,
+    "load_duration_sec": 71.94534659385681,
+    "avg_throughput_rps": 138.9665971927321,
+    "scale_up_snapshots": [
+      {
+        "timestamp": "08:44:57",
+        "elapsed_sec": 0.04804348945617676,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:02",
+        "elapsed_sec": 5.095288276672363,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:07",
+        "elapsed_sec": 10.141510248184204,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:13",
+        "elapsed_sec": 15.189690828323364,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:18",
+        "elapsed_sec": 20.240399837493896,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:23",
+        "elapsed_sec": 25.287076711654663,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:28",
+        "elapsed_sec": 30.33407735824585,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:33",
+        "elapsed_sec": 35.3829562664032,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:38",
+        "elapsed_sec": 40.429518938064575,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:43",
+        "elapsed_sec": 45.475852251052856,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:48",
+        "elapsed_sec": 50.525609254837036,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:45:53",
+        "elapsed_sec": 55.57254433631897,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      }
+    ],
+    "scale_down_snapshots": [
+      {
+        "timestamp": "08:45:58",
+        "elapsed_sec": 0.04752802848815918,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:46:08",
+        "elapsed_sec": 10.094439268112183,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:46:18",
+        "elapsed_sec": 20.140063285827637,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:46:28",
+        "elapsed_sec": 30.18588137626648,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:46:38",
+        "elapsed_sec": 40.232426404953,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:46:48",
+        "elapsed_sec": 50.27944231033325,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:46:58",
+        "elapsed_sec": 60.328200578689575,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:47:08",
+        "elapsed_sec": 70.37549567222595,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:47:18",
+        "elapsed_sec": 80.42210817337036,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:47:28",
+        "elapsed_sec": 90.46979475021362,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:47:38",
+        "elapsed_sec": 100.51702523231506,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      },
+      {
+        "timestamp": "08:47:48",
+        "elapsed_sec": 110.56435561180115,
+        "instances": 1,
+        "backlog": 2,
+        "completed": 25994,
+        "throughput": 1999.6
+      }
+    ]
+  }
+}
