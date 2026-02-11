@@ -114,6 +114,7 @@ gcloud sql instances create "$DB_INSTANCE" \
   --memory=8GB \
   --storage-size=50GB \
   --storage-type=SSD \
+  --enable-storage-auto-increase \
   --availability-type=zonal
 ```
 
