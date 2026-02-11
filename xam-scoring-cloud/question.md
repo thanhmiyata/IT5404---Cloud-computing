@@ -50,3 +50,28 @@
     1.  Mở **Cloud Run Metrics** để xem biểu đồ `Instance Count` tăng trưởng theo thời gian thực.
     2.  Theo dõi biểu đồ **Backlog** trên Dashboard để thấy Pub/Sub hấp thụ spike như thế nào.
     3.  Chứng minh hệ thống không bị lỗi (Error rate ~ 0%) nhờ khả năng co giãn linh hoạt.
+
+---
+
+### Phần 5: Nâng cao & Vận hành (Advanced & Operation)
+
+#### Câu 8: Hiện tượng "Cold Start" là gì và nó ảnh hưởng thế nào đến hệ thống của em?
+*   **Trả lời:** Cold Start là độ trễ khi Cloud phải khởi tạo container, nạp mã nguồn và kết nối DB cho lần chạy đầu tiên hoặc khi scale-out thêm instance mới. 
+*   **Cách giải quyết:** Em sử dụng Image `python-slim` để giảm dung lượng, giúp bốc dỡ nhanh hơn. Ngoài ra, thiết lập `--min-instances` để giữ một số máy luôn "nóng" (warm standby) sẵn sàng xử lý ngay mà không bị trễ.
+
+#### Câu 9: Làm sao đảm bảo an toàn cho các thông tin nhạy cảm (mật khẩu DB, API Key) khi nộp dự án?
+*   **Trả lời:** Việc để mật khẩu trực tiếp trong code (Hardcoded) là rủi ro bảo mật lớn. 
+*   **Cách xử lý:** Em sử dụng dịch vụ **GCP Secret Manager**. Các mật khẩu được lưu trữ tập trung và mã hóa trên Cloud. Khi ứng dụng chạy, các giá trị này sẽ được "tiêm" (inject) vào biến môi trường thông qua tham số `--set-secrets`, giúp mã nguồn hoàn toàn sạch và an toàn.
+
+#### Câu 10: Điều gì xảy ra nếu Worker đang chấm dở một bài thi mà hệ thống thực hiện Scale-in (tắt bớt instance)?
+*   **Trả lời:** Cloud Run sử dụng cơ chế **Graceful Shutdown**. Khi có lệnh tắt instance để giảm chi phí, nó sẽ gửi một tín hiệu `SIGTERM`. 
+*   **Xử lý:** Worker cần được thiết kế để lắng nghe tín hiệu này, cố gắng hoàn tất tác vụ chấm điểm hiện tại và đóng kết nối Database an toàn trước khi instance bị hủy hoàn toàn.
+
+#### Câu 11: Nếu có kẻ tấn công gửi hàng triệu request rác làm hệ thống scale-out vô hạn gây tốn kém, em xử lý sao?
+*   **Trả lời:** Đây là vấn đề kiểm soát chi phí (Cost Management). 
+*   **Cách xử lý:** 
+    1. Đặt giới hạn cứng `--max-instances` (ví dụ 300) để chặn trần chi phí. 
+    2. Sử dụng **Cloud Armor** hoặc **API Gateway** để thực hiện **Rate Limiting**, chặn bớt các IP đáng nghi hoặc giới hạn số request tối đa từ mỗi người dùng trong một khoảng thời gian.
+
+#### Câu 12: Em hiểu thế nào về cơ chế "Pay-as-you-go" thông qua dự án này?
+*   **Trả lời:** Đây là giá trị cốt lõi của Cloud. Với kiến trúc **Serverless (Cloud Run)**, hệ thống của em chỉ phát sinh chi phí khi thực sự có bài thi được nộp. Khi kỳ thi kết thúc, hệ thống tự động co về 0 (Scale-to-Zero), giúp trường học tiết kiệm tối đa ngân sách so với việc duy trì server vật lý chạy 24/7.
