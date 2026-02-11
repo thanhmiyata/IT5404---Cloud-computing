@@ -50,11 +50,17 @@ def _now_iso() -> str:
 
 
 def _require_api_key(x_api_key: str | None = Header(default=None)) -> None:
+    """
+    Require an API key to access the endpoint.
+    """
     if API_KEY and x_api_key != API_KEY:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized")
 
 
 def _publish_job(payload: dict) -> None:
+    """
+    Publish the job to the Pub/Sub topic.
+    """
     if PUBSUB_DISABLED:
         if SCORE_WORKER_URL:
             try:
@@ -75,6 +81,9 @@ def _publish_job(payload: dict) -> None:
 
 
 def _get_exam_questions(conn, exam_id: str):
+    """
+    Get the questions for an exam.
+    """
     with conn.cursor() as cur:
         cur.execute("SELECT question_id, points FROM questions WHERE exam_id=%s", (exam_id,))
         return cur.fetchall()
@@ -97,6 +106,12 @@ def healthz():
 
 @app.post("/v1/exams/{exam_id}/submissions", status_code=status.HTTP_202_ACCEPTED)
 def submit_exam(exam_id: str, body: SubmitRequest, _: None = Depends(_require_api_key)):
+    """
+    Submit an exam by:
+    - Validating the exam exists.
+    - Creating a submission record.
+    - Publishing the job to the Pub/Sub topic.
+    """
     submission_id = f"sub_{uuid.uuid4().hex}"
     trace_id = f"trace_{uuid.uuid4().hex}"
 
@@ -158,6 +173,9 @@ def submit_exam(exam_id: str, body: SubmitRequest, _: None = Depends(_require_ap
 
 @app.get("/v1/submissions/{submission_id}")
 def get_submission(submission_id: str, _: None = Depends(_require_api_key)):
+    """
+    Get the status of a submission.
+    """
     conn = get_conn()
     try:
         with conn.cursor() as cur:
@@ -203,6 +221,17 @@ def get_submission(submission_id: str, _: None = Depends(_require_api_key)):
 
 @app.get("/v1/internal/stats")
 def get_stats(_: None = Depends(_require_api_key)):
+    """
+    Get the statistics of the system including:
+    - Total submissions
+    - Status breakdown
+    - Latest logs
+    - All exams with timing
+    - Performance metrics
+
+    This endpoint is used to monitor the system and identify potential issues. It can be used to scale the system by
+    identifying bottlenecks.
+    """
     conn = get_conn()
     try:
         with conn.cursor() as cur:
@@ -278,10 +307,11 @@ def get_stats(_: None = Depends(_require_api_key)):
     # Simulated infrastructure data for Demo
     import random
     backlog = status_map.get("RECEIVED", 0) + status_map.get("SCORING", 0)
-    
-    # Scale instances based on backlog
-    # instances = max(1, min(50, backlog // 5 + 1))
-    instances = max(1, min(50, backlog // 2 + 1)) # More sensitive scaling for demo
+
+    # Scale instances based on backlog (Simulated for Demo)
+    # Target: 1-1000 workers for 10k submissions
+    # Formula: backlog // 10 + 10 -> At 10,000 backlog -> 1010 instances
+    instances = max(1, min(1000, int(backlog / 10) + 1))
     
     return {
         "business": {
@@ -294,8 +324,8 @@ def get_stats(_: None = Depends(_require_api_key)):
         },
         "infrastructure": {
             "instances": instances,
-            "cpu": random.randint(30, 85) if backlog > 0 else random.randint(5, 15),
-            "memory": random.randint(40, 70),
+            "cpu": random.randint(30, 85) if backlog > 0 else 10,
+            "memory": random.randint(40, 70) if backlog > 0 else 20,
         },
         "logs": logs,
         "exams": exams
@@ -318,6 +348,11 @@ class AdminExam(BaseModel):
 
 @app.get("/v1/admin/exams/{exam_id}")
 def get_exam_detail(exam_id: str, _: None = Depends(_require_api_key)):
+    """
+    Get the details of an exam including:
+    - Exam information
+    - Questions with correct answers
+    """
     conn = get_conn()
     try:
         with conn.cursor() as cur:
@@ -343,6 +378,9 @@ def get_exam_detail(exam_id: str, _: None = Depends(_require_api_key)):
 
 @app.post("/v1/admin/exams")
 def create_exam(body: AdminExam, _: None = Depends(_require_api_key)):
+    """
+    Create a new exam or update an existing exam.
+    """
     conn = get_conn()
     try:
         with conn:

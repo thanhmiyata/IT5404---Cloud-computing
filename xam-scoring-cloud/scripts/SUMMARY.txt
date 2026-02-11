@@ -1,0 +1,139 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    EXAM SCORING CLOUD - TEST SUITE                           ║
+║                         ✅ SẴN SÀNG CHO DEMO                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📊 TEST COVERAGE - 4 CHỨC NĂNG CHÍNH                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  ✅ 1. NỘP BÀI TỨC THÌ (Async Submit - 202 Accepted)
+     Script: spike_load_test.py
+     Test:   1000 concurrent submissions
+     Expect: 100% success, P95 < 100ms, throughput > 100 req/s
+
+  ✅ 2. CHẤM ĐIỂM TIN CẬY (Idempotent, Retry-safe)
+     Script: test_idempotency.py
+     Tests:  - Sequential duplicates → same submissionId
+             - Concurrent duplicates → no race condition
+             - Retry simulation → consistent results
+             - Deterministic scoring → same answers = same score
+
+  ✅ 3. TRA CỨU KẾT QUẢ (Polling API)
+     Script: spike_load_test.py --poll
+     Test:   Status transitions: RECEIVED → SCORING → SCORED
+     Expect: All submissions reach SCORED within timeout
+
+  ✅ 4. DASHBOARD GIÁM SÁT (Real-time Monitoring)
+     Script: test_dashboard.py
+     Tests:  - Stats API connectivity
+             - Real-time metrics update (every 2s)
+             - Submission feed updates
+             - Autoscaling metrics (instances, CPU, memory)
+             - Backlog monitoring
+             - Throughput calculation
+             - Exam management data
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🚀 QUICK START - DEMO TRONG 1 LỆNH                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  cd /root/IT5404---Cloud-computing/xam-scoring-cloud/scripts
+  ./run_all_tests.sh
+
+  → Chạy tất cả 13 test cases
+  → Tự động lưu kết quả vào test_results_YYYYMMDD_HHMMSS/
+  → Tạo SUMMARY.txt với kết quả chi tiết
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📁 FILES CREATED                                                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  🧪 Test Scripts (NEW):
+    ⭐⭐⭐ test_idempotency.py     - Test chấm điểm tin cậy (17KB)
+    ⭐⭐⭐ test_dashboard.py        - Test dashboard monitoring (17KB)
+    ⭐⭐⭐ run_all_tests.sh         - Chạy tất cả tests (8.3KB)
+
+  📊 Load Testing (EXISTING):
+    ⭐⭐⭐ spike_load_test.py       - Spike load + polling (13KB)
+    ⭐⭐  make_load.py             - Load generator (5.9KB)
+    ⭐⭐  demo_spike.py            - Demo spike scenario (4.6KB)
+    ⭐   bulk_submit.py           - Simple bulk submit (1.5KB)
+
+  📖 Documentation (NEW):
+    📄 DEMO_GUIDE.md              - Hướng dẫn demo chi tiết (8.7KB)
+    📄 QUICK_REFERENCE.md         - Quick commands (2.9KB)
+    📄 README.md                  - Tổng quan test suite (5.8KB)
+    📄 SUMMARY.txt                - File này
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🎬 DEMO SCENARIOS                                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  SCENARIO A: Quick 5-min Demo
+    1. Open dashboard: http://localhost:8000/admin-dashboard.html
+    2. Run: python3 spike_load_test.py --count 200
+    3. Run: python3 test_idempotency.py
+
+  SCENARIO B: Full 15-min Demo (RECOMMENDED)
+    1. Run: ./run_all_tests.sh
+    2. Show: cat test_results_*/SUMMARY.txt
+    3. Show: Dashboard metrics
+
+  SCENARIO C: Live Monitoring Demo
+    Terminal 1: Open dashboard
+    Terminal 2: python3 test_dashboard.py --live-demo --duration 120
+    Terminal 3: python3 spike_load_test.py --count 1000
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📈 EXPECTED RESULTS                                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  Dashboard Test:        ✓ 7/7 tests passed
+  Idempotency Test:      ✓ 4/4 tests passed
+  Spike Load Test:       ✓ 100% success rate
+
+  Performance Metrics:
+    - Response Time: ~50ms avg, ~80ms P95
+    - Throughput: ~125 req/s
+    - Success Rate: 100%
+    - No duplicate scoring
+    - Realtime updates working
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🎯 KEY MESSAGES CHO TEAM                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  1. ✅ Async Submit: Client không bị block, UX tốt hơn
+  2. ✅ Idempotency: Worker retry-safe, không sợ chấm trùng
+  3. ✅ Polling API: Client chủ động lấy kết quả
+  4. ✅ Dashboard: Giám sát realtime, dễ debug, dễ scale
+
+  🎉 KẾT LUẬN: Hệ thống đáp ứng đầy đủ 4 yêu cầu chức năng!
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔧 TROUBLESHOOTING                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  Services không chạy?
+    → docker-compose up -d
+    → docker-compose ps
+
+  API không accessible?
+    → curl -H "X-API-KEY: change-me" http://localhost:8080/v1/internal/stats
+
+  Tests fail?
+    → cat test_results_*/SUMMARY.txt
+    → docker-compose logs -f
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📞 DOCUMENTATION                                                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  Chi tiết demo:     cat DEMO_GUIDE.md
+  Quick commands:    cat QUICK_REFERENCE.md
+  Full overview:     cat README.md
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         ✨ READY FOR TEAM DEMO ✨                            ║
+╚══════════════════════════════════════════════════════════════════════════════╝

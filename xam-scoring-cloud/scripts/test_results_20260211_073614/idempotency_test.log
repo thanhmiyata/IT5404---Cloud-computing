@@ -1,0 +1,61 @@
+
+[1m[96m======================================================================[0m
+[1m[96m  IDEMPOTENCY & RELIABILITY TEST SUITE[0m
+[1m[96m======================================================================[0m
+
+Target: http://localhost:8080
+Exam ID: exam_001
+
+[1m[94m[TEST][0m Test 1: Sequential Duplicate Submissions
+  [93mℹ INFO:[0m Submitting same exam 5 times for user: idempotency_test_53630_f
+  [93mℹ INFO:[0m   Attempt 1: Got submissionId = sub_861459802490440293090abc4f9dd233
+  [93mℹ INFO:[0m   Attempt 2: Got submissionId = sub_141ec75ab0e74cfb87b7725b22055028
+  [93mℹ INFO:[0m   Attempt 3: Got submissionId = sub_6a055ac356fa40b7bd4eb7414a3a8006
+  [93mℹ INFO:[0m   Attempt 4: Got submissionId = sub_b4269cbab9704a458927af9738541346
+  [93mℹ INFO:[0m   Attempt 5: Got submissionId = sub_555bb9296b294f12823419ea0d65538d
+  [93mℹ INFO:[0m Waiting for 5 submissions to be scored (timeout: 30s)...
+  [93mℹ INFO:[0m All submissions processed in 0.0s
+  [92m✓ PASS:[0m Consistent scoring: 5 unique IDs, but all scored identically (2 points)
+[1m[94m[TEST][0m Test 2: Concurrent Duplicate Submissions (Race Condition)
+  [93mℹ INFO:[0m Submitting same exam 10 times concurrently for user: idempotency_test_17001_k
+  [93mℹ INFO:[0m Received 10 submission IDs
+  [93mℹ INFO:[0m Waiting for 10 submissions to be scored (timeout: 30s)...
+  [93mℹ INFO:[0m All submissions processed in 0.1s
+  [91m✗ FAIL:[0m Race condition detected: 10 unique IDs with inconsistent scores
+[1m[94m[TEST][0m Test 3: Worker Retry Simulation (Fetch Consistency)
+  [93mℹ INFO:[0m Created submission: sub_f233c1ba82b64f2eb9878cb75610439a
+  [93mℹ INFO:[0m Waiting for 1 submissions to be scored (timeout: 30s)...
+  [93mℹ INFO:[0m All submissions processed in 0.0s
+  [93mℹ INFO:[0m Fetching same submission 20 times to verify consistency...
+  [92m✓ PASS:[0m Perfect consistency: All 20 fetches returned same score (3) and status (SCORED)
+[1m[94m[TEST][0m Test 4: Deterministic Scoring (Different Users, Same Answers)
+  [93mℹ INFO:[0m Submitting same answers for 5 different users...
+  [93mℹ INFO:[0m   User 1 (idempotency_test_36008_g): sub_db6acd0e3623458e923614b2f424b7b5
+  [93mℹ INFO:[0m   User 2 (idempotency_test_90699_v): sub_91583611e34d4f358221295ea9881f90
+  [93mℹ INFO:[0m   User 3 (idempotency_test_56184_u): sub_ef1ff8417243409388ecfe016943ec2e
+  [93mℹ INFO:[0m   User 4 (idempotency_test_38673_d): sub_fc106b5c0d3340479c8e24dec8528f65
+  [93mℹ INFO:[0m   User 5 (idempotency_test_31969_y): sub_6ba1fb912fce4b55b6a91f01f54a8353
+  [93mℹ INFO:[0m Waiting for 5 submissions to be scored (timeout: 30s)...
+  [93mℹ INFO:[0m All submissions processed in 0.0s
+  [92m✓ PASS:[0m Deterministic scoring confirmed: All 5 users got same score (1 points)
+
+[1m[96m======================================================================[0m
+[1m[96m  TEST SUMMARY[0m
+[1m[96m======================================================================[0m
+
+Total Tests: 4
+[92mPassed: 3[0m
+[91mFailed: 1[0m
+
+[92m✓ PASS[0m - Sequential Duplicate Submissions
+       Consistent scoring: 5 unique IDs, but all scored identically (2 points)
+[91m✗ FAIL[0m - Concurrent Duplicate Submissions
+       Race condition detected: 10 unique IDs with inconsistent scores
+[92m✓ PASS[0m - Worker Retry Simulation
+       Perfect consistency: All 20 fetches returned same score (3) and status (SCORED)
+[92m✓ PASS[0m - Deterministic Scoring
+       Deterministic scoring confirmed: All 5 users got same score (1 points)
+
+[1mOverall Result: [91m1 TEST(S) FAILED ✗[0m
+
+Results saved to: ./test_results_20260211_073614/idempotency_test.json

@@ -1,0 +1,89 @@
+
+[1m[96m======================================================================[0m
+[1m[96m  DASHBOARD REAL-TIME MONITORING TEST SUITE[0m
+[1m[96m======================================================================[0m
+
+Target API: http://localhost:8080
+Dashboard Stats: http://localhost:8080/v1/internal/stats
+
+
+[1m[94m[TEST][0m Test 1: Dashboard Stats API Connectivity
+  [92m✓ PASS:[0m Successfully connected to stats API
+  [93mℹ INFO:[0m Response contains: business, infrastructure, logs, exams
+
+[1m[94m[TEST][0m Test 2: Real-time Metrics Update (monitoring for 20s)
+  [93mℹ INFO:[0m Collecting snapshots every 2 seconds...
+
+  TIME       | TOTAL    | BACKLOG  | COMPLETED  | INSTANCES  | THROUGHPUT  
+  --------------------------------------------------------------------------------
+  07:36:15   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:17   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:19   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:22   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:24   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:26   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:28   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:30   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:32   | 25048    | 33       | 25015      | 17         | 203.8       
+  07:36:34   | 25048    | 33       | 25015      | 17         | 203.8       
+  [93mℹ INFO:[0m No metric changes detected (system may be idle)
+
+[1m[94m[TEST][0m Test 3: Submission Feed / Logs Display
+  [92m✓ PASS:[0m Found 20 recent submissions in feed
+  [93mℹ INFO:[0m Sample submissions:
+    1. User: student_37574_e      | Status: [92mSCORED  [0m | Score: 1/5
+    2. User: student_60119_a      | Status: [92mSCORED  [0m | Score: 3/5
+    3. User: student_28262_m      | Status: [92mSCORED  [0m | Score: 1/5
+    4. User: student_29150_u      | Status: [92mSCORED  [0m | Score: 1/5
+    5. User: student_29892_b      | Status: [92mSCORED  [0m | Score: 3/5
+
+[1m[94m[TEST][0m Test 4: Autoscaling & Infrastructure Metrics
+  [1mWorker Instances:[0m [96m17[0m
+  [1mCPU Usage:[0m [95m63%[0m
+  [1mMemory Usage:[0m [95m57%[0m
+  [92m✓ PASS:[0m Infrastructure metrics are available
+
+[1m[94m[TEST][0m Test 5: Backlog Monitoring (tracking for 15s)
+  [93mℹ INFO:[0m Tracking backlog changes...
+
+  TIME       | BACKLOG    | TREND          
+  ----------------------------------------
+  07:36:39   | 33         |                
+  07:36:42   | 33         | [93m→ Stable[0m
+  07:36:45   | 33         | [93m→ Stable[0m
+  07:36:48   | 33         | [93m→ Stable[0m
+  07:36:51   | 33         | [93m→ Stable[0m
+
+  [1mAverage Backlog:[0m [96m33.0[0m
+  [1mMax Backlog:[0m [91m33[0m
+  [1mMin Backlog:[0m [92m33[0m
+  [92m✓ PASS:[0m Backlog monitoring functional
+
+[1m[94m[TEST][0m Test 6: Throughput Calculation
+  [1mThroughput:[0m [92m203.0 submissions/min[0m
+  [1mAvg Latency:[0m [95m150 ms[0m
+  [92m✓ PASS:[0m Throughput and latency metrics available
+
+[1m[94m[TEST][0m Test 7: Exam Management Data
+  [92m✓ PASS:[0m Found 1 exam(s) in system
+    1. exam_001        | Demo exam                 | [92mACTIVE[0m
+
+[1m[96m======================================================================[0m
+[1m[96m  TEST SUMMARY[0m
+[1m[96m======================================================================[0m
+
+Total Tests: 7
+[92mPassed: 7[0m
+[91mFailed: 0[0m
+
+[92m✓ PASS[0m - Dashboard Connectivity
+[92m✓ PASS[0m - Real-time Metrics Update
+[92m✓ PASS[0m - Submission Feed Updates
+[92m✓ PASS[0m - Autoscaling Metrics
+[92m✓ PASS[0m - Backlog Monitoring
+[92m✓ PASS[0m - Throughput Calculation
+[92m✓ PASS[0m - Exam Management Data
+
+[1mOverall Result: [92mALL TESTS PASSED ✓[0m
+
+Results saved to: ./test_results_20260211_073614/dashboard_test.json

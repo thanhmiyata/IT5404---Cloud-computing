@@ -1,0 +1,20 @@
+{
+  "test_config": {
+    "api_url": "http://localhost:8080",
+    "timestamp": "2026-02-11T07:36:56.728490"
+  },
+  "results": {
+    "Dashboard Connectivity": true,
+    "Real-time Metrics Update": true,
+    "Submission Feed Updates": true,
+    "Autoscaling Metrics": true,
+    "Backlog Monitoring": true,
+    "Throughput Calculation": true,
+    "Exam Management Data": true
+  },
+  "summary": {
+    "total_tests": 7,
+    "passed": 7,
+    "failed": 0
+  }
+}

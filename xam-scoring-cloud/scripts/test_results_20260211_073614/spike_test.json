@@ -1,0 +1,29 @@
+{
+  "test_config": {
+    "api_url": "http://localhost:8080",
+    "exam_id": "exam_001",
+    "num_submissions": 500,
+    "max_workers": 50
+  },
+  "metrics": {
+    "total_submissions": 500,
+    "successful": 500,
+    "failed": 0,
+    "avg_response_time_ms": 352.5118327140808,
+    "min_response_time_ms": 156.59785270690918,
+    "max_response_time_ms": 534.0795516967773,
+    "p95_response_time_ms": 452.0285129547119,
+    "p99_response_time_ms": 496.7620372772217,
+    "total_duration_sec": 3.7216053009033203,
+    "submissions_per_sec": 134.35062548912384
+  },
+  "completion_stats": {
+    "final_status": {
+      "RECEIVED": 4,
+      "SCORING": 0,
+      "SCORED": 496,
+      "FAILED": 0
+    },
+    "time_to_complete_sec": 125.15708494186401
+  }
+}

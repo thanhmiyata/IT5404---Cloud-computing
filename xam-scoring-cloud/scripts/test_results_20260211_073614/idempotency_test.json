@@ -1,0 +1,50 @@
+{
+  "test_config": {
+    "api_url": "http://localhost:8080",
+    "exam_id": "exam_001",
+    "timestamp": "2026-02-11T07:37:28Z"
+  },
+  "results": [
+    {
+      "test_name": "Sequential Duplicate Submissions",
+      "passed": true,
+      "details": "Consistent scoring: 5 unique IDs, but all scored identically (2 points)",
+      "submission_count": 5,
+      "unique_scores": [
+        2
+      ]
+    },
+    {
+      "test_name": "Concurrent Duplicate Submissions",
+      "passed": false,
+      "details": "Race condition detected: 10 unique IDs with inconsistent scores",
+      "submission_count": 10,
+      "unique_scores": [
+        0
+      ]
+    },
+    {
+      "test_name": "Worker Retry Simulation",
+      "passed": true,
+      "details": "Perfect consistency: All 20 fetches returned same score (3) and status (SCORED)",
+      "submission_count": 1,
+      "unique_scores": [
+        3
+      ]
+    },
+    {
+      "test_name": "Deterministic Scoring",
+      "passed": true,
+      "details": "Deterministic scoring confirmed: All 5 users got same score (1 points)",
+      "submission_count": 5,
+      "unique_scores": [
+        1
+      ]
+    }
+  ],
+  "summary": {
+    "total_tests": 4,
+    "passed": 3,
+    "failed": 1
+  }
+}

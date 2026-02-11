@@ -21,6 +21,9 @@ def _now_iso() -> str:
 
 
 def _parse_job(payload: dict) -> dict:
+    """
+    Parse the payload to extract the job information.
+    """
     if "message" in payload and "data" in payload["message"]:
         raw = base64.b64decode(payload["message"]["data"]).decode("utf-8")
         return json.loads(raw)
@@ -55,6 +58,13 @@ def healthz():
 
 @app.post("/v1/score")
 def score_job(payload: dict):
+    """
+    Score a job by:
+    - Parsing the payload to extract the job information.
+    - Fetching the questions for the exam.
+    - Scoring the answers.
+    - Updating the submission status.
+    """
     try:
         job = _parse_job(payload)
     except ValueError as exc:
@@ -91,7 +101,8 @@ def score_job(payload: dict):
                 )
                 
                 # Simulate heavier processing for demo visibility
-                time.sleep(0.1)
+                # time.sleep(1.0)
+                time.sleep(0.2)
 
                 questions = _fetch_questions(conn, exam_id)
                 if not questions:

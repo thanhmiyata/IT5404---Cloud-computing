@@ -1,0 +1,61 @@
+{
+  "test_config": {
+    "api_url": "http://localhost:8080",
+    "exam_id": "exam_001",
+    "timestamp": "2026-02-11T07:52:44Z"
+  },
+  "metrics": [
+    {
+      "test_name": "Normal Load Latency",
+      "passed": true,
+      "total_requests": 100,
+      "successful": 45,
+      "failed": 55,
+      "error_rate_percent": 55.00000000000001,
+      "avg_latency_ms": 82.36137628555298,
+      "p95_latency_ms": 182.13820457458496,
+      "p99_latency_ms": 186.9664192199707,
+      "throughput_rps": 109.62961259169771,
+      "details": "P95: 182.1ms (target: <300ms)"
+    },
+    {
+      "test_name": "Spike Load Latency",
+      "passed": true,
+      "total_requests": 1000,
+      "successful": 1000,
+      "failed": 0,
+      "error_rate_percent": 0.0,
+      "avg_latency_ms": 681.5070111751556,
+      "p95_latency_ms": 796.3552474975586,
+      "p99_latency_ms": 853.5304069519043,
+      "throughput_rps": 137.31545480810703,
+      "details": "P95: 796.4ms (target: <800ms)"
+    },
+    {
+      "test_name": "Error Rate Under Spike",
+      "passed": true,
+      "total_requests": 1000,
+      "successful": 999,
+      "failed": 1,
+      "error_rate_percent": 0.1,
+      "avg_latency_ms": 703.1548709869385,
+      "p95_latency_ms": 813.1453990936279,
+      "p99_latency_ms": 0,
+      "throughput_rps": 134.05574576128174,
+      "details": "5xx rate: 0.10% (target: <1%)"
+    }
+  ],
+  "autoscaling": {
+    "passed": true,
+    "baseline_instances": 50,
+    "peak_instances": 50,
+    "baseline_backlog": 151,
+    "peak_backlog": 152,
+    "details": "Instances: 50\u219250, Backlog: 151\u2192152"
+  },
+  "summary": {
+    "total_tests": 3,
+    "passed": 3,
+    "failed": 0
+  }
+}

@@ -1,0 +1,37 @@
+=============================================================================
+  EXAM SCORING SYSTEM - TEST SUMMARY
+=============================================================================
+
+Timestamp:     Wed Feb 11 07:39:39 UTC 2026
+API URL:       http://localhost:8080
+Results Dir:   ./test_results_20260211_073614
+
+-----------------------------------------------------------------------------
+  TEST RESULTS
+-----------------------------------------------------------------------------
+
+✓ Dashboard Test:        COMPLETED
+  - Total: 7, Passed: 7, Failed: 0
+
+✓ Idempotency Test:      COMPLETED
+  - Total: 4, Passed: 3, Failed: 1
+
+✓ Spike Load Test:       COMPLETED
+  - Submissions: 500, Success: 500, Failed: 0
+  - Avg Response: 352ms, P95: 452ms
+  - Throughput: 134 req/s
+
+=============================================================================
+
+All test results saved to: ./test_results_20260211_073614
+
+Files generated:
+  - SUMMARY.txt (941)
+  - dashboard_test.json (452)
+  - dashboard_test.log (4.0K)
+  - idempotency_test.json (1.2K)
+  - idempotency_test.log (3.7K)
+  - spike_test.json (746)
+  - spike_test.log (3.4K)
+
+=============================================================================

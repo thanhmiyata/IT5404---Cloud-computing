@@ -1,0 +1,20 @@
+{
+  "test_config": {
+    "api_url": "http://localhost:8080",
+    "exam_id": "exam_001",
+    "num_submissions": 100,
+    "timestamp": "2026-02-11T07:53:58Z"
+  },
+  "result": {
+    "passed": true,
+    "total_submissions": 98,
+    "completed": 97,
+    "failed": 1,
+    "avg_time_sec": 0.06708102865317433,
+    "p50_time_sec": 0.0624849796295166,
+    "p95_time_sec": 0.11282968521118164,
+    "p99_time_sec": 0.5339827537536621,
+    "max_time_sec": 0.5339827537536621,
+    "details": "P95: 0.1s (target: <30s)"
+  }
+}

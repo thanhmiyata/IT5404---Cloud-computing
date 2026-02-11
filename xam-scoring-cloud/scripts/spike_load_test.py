@@ -334,28 +334,29 @@ Examples:
             )
 
     # Optional: Save results to JSON
+    output_data = {
+        "test_config": {
+            "api_url": args.url,
+            "exam_id": args.exam_id,
+            "num_submissions": args.count,
+            "max_workers": args.workers
+        },
+        "metrics": {
+            "total_submissions": metrics.total_submissions,
+            "successful": metrics.successful,
+            "failed": metrics.failed,
+            "avg_response_time_ms": metrics.avg_response_time_ms,
+            "min_response_time_ms": metrics.min_response_time_ms,
+            "max_response_time_ms": metrics.max_response_time_ms,
+            "p95_response_time_ms": metrics.p95_response_time_ms,
+            "p99_response_time_ms": metrics.p99_response_time_ms,
+            "total_duration_sec": metrics.total_duration_sec,
+            "submissions_per_sec": metrics.submissions_per_sec
+        },
+        "completion_stats": completion_stats
+    }
+    print(json.dumps(output_data, indent=4))
     if args.output:
-        output_data = {
-            "test_config": {
-                "api_url": args.url,
-                "exam_id": args.exam_id,
-                "num_submissions": args.count,
-                "max_workers": args.workers
-            },
-            "metrics": {
-                "total_submissions": metrics.total_submissions,
-                "successful": metrics.successful,
-                "failed": metrics.failed,
-                "avg_response_time_ms": metrics.avg_response_time_ms,
-                "min_response_time_ms": metrics.min_response_time_ms,
-                "max_response_time_ms": metrics.max_response_time_ms,
-                "p95_response_time_ms": metrics.p95_response_time_ms,
-                "p99_response_time_ms": metrics.p99_response_time_ms,
-                "total_duration_sec": metrics.total_duration_sec,
-                "submissions_per_sec": metrics.submissions_per_sec
-            },
-            "completion_stats": completion_stats
-        }
         with open(args.output, "w") as f:
             json.dump(output_data, f, indent=2)
         print(f"Results saved to: {args.output}")

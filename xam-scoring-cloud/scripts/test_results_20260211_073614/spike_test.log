@@ -1,0 +1,88 @@
+
+============================================================
+  SPIKE LOAD TEST - End of Exam Scenario
+============================================================
+  Target:      http://localhost:8080
+  Exam ID:     exam_001
+  Submissions: 500
+  Workers:     50
+============================================================
+
+[07:37:30] Starting spike submission...
+[07:37:31] Progress: 100/500 (100 success, 0 failed) - 104.7 req/s
+[07:37:32] Progress: 200/500 (200 success, 0 failed) - 125.9 req/s
+[07:37:33] Progress: 300/500 (300 success, 0 failed) - 127.5 req/s
+[07:37:33] Progress: 400/500 (400 success, 0 failed) - 130.8 req/s
+[07:37:34] Progress: 500/500 (500 success, 0 failed) - 134.6 req/s
+
+============================================================
+  TEST RESULTS SUMMARY
+============================================================
+
+  Submission Results:
+    Total:      500
+    Successful: 500 (100.0%)
+    Failed:     0 (0.0%)
+
+  Response Time (ms):
+    Average:    352.5
+    Min:        156.6
+    Max:        534.1
+    P95:        452.0
+    P99:        496.8
+
+  Throughput:
+    Duration:   3.72s
+    Rate:       134.4 submissions/sec
+
+============================================================
+
+
+[07:37:34] Polling for completion (timeout: 120s)...
+[07:37:36] Status after 2s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:37:44] Status after 10s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:37:51] Status after 17s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:37:58] Status after 24s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:06] Status after 32s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:13] Status after 39s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:20] Status after 46s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:28] Status after 54s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:35] Status after 61s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:42] Status after 68s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:50] Status after 76s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:38:57] Status after 83s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:39:05] Status after 91s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:39:12] Status after 98s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:39:19] Status after 105s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:39:27] Status after 113s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+[07:39:34] Status after 120s: SCORED=496, SCORING=0, RECEIVED=4, FAILED=0
+{
+    "test_config": {
+        "api_url": "http://localhost:8080",
+        "exam_id": "exam_001",
+        "num_submissions": 500,
+        "max_workers": 50
+    },
+    "metrics": {
+        "total_submissions": 500,
+        "successful": 500,
+        "failed": 0,
+        "avg_response_time_ms": 352.5118327140808,
+        "min_response_time_ms": 156.59785270690918,
+        "max_response_time_ms": 534.0795516967773,
+        "p95_response_time_ms": 452.0285129547119,
+        "p99_response_time_ms": 496.7620372772217,
+        "total_duration_sec": 3.7216053009033203,
+        "submissions_per_sec": 134.35062548912384
+    },
+    "completion_stats": {
+        "final_status": {
+            "RECEIVED": 4,
+            "SCORING": 0,
+            "SCORED": 496,
+            "FAILED": 0
+        },
+        "time_to_complete_sec": 125.15708494186401
+    }
+}
+Results saved to: ./test_results_20260211_073614/spike_test.json
